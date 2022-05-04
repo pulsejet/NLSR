@@ -102,9 +102,9 @@ CommandManagerBase::withdrawAndRemovePrefix(const ndn::Name& prefix,
     static_cast<const ndn::nfd::ControlParameters&>(parameters);
 
   // Only build a Name LSA if the added name is new
-  if (m_namePrefixList.remove(castParams.getName())) { // TODO: Make this multicast-aware
+  if (m_namePrefixList.remove(castParams.getName())) {
     NLSR_LOG_INFO("Withdrawing/Removing name: " << castParams.getName() << "\n");
-    m_lsdb.buildAndInstallOwnNameLsa(); // TODO: Make this multicast-aware
+    m_lsdb.buildAndInstallOwnNameLsa();
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
       if (afterWithdraw(castParams.getName(), false) == true) {
         return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
@@ -141,7 +141,7 @@ void CommandManagerBase::advertiseAndInsertMulticastPrefix(const ndn::Name &pref
   const auto& castParams = static_cast<const ndn::nfd::ControlParameters&>(parameters);
 
   // Only build a Name LSA if the added multicast name is new
-  if (m_namePrefixList.insert(castParams.getName())) { // TODO: Make this multicast-aware
+  if (m_namePrefixList.insertMulticast(castParams.getName())) {
     NLSR_LOG_INFO("Advertising multicast name: " << castParams.getName() << "\n");
     m_lsdb.buildAndInstallOwnNameLsa(); // TODO: Make this multicast-aware
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
@@ -181,9 +181,9 @@ void CommandManagerBase::withdrawAndRemoveMulticastPrefix(const ndn::Name &prefi
   const auto& castParams = static_cast<const ndn::nfd::ControlParameters&>(parameters);
 
   // Only build a Name LSA if the removed name is not new
-  if (m_namePrefixList.remove(castParams.getName())) {
+  if (m_namePrefixList.removeMulticast(castParams.getName())) {
     NLSR_LOG_INFO("Withdrawing/Removing multicast name: " << castParams.getName() << "\n");
-    m_lsdb.buildAndInstallOwnNameLsa();
+    m_lsdb.buildAndInstallOwnNameLsa(); // TODO: Make this multicast-aware
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
       if (afterWithdraw(castParams.getName(), true) == true) {
         return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));

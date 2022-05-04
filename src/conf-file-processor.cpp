@@ -618,7 +618,7 @@ ConfFileProcessor::processConfSectionAdvertising(const ConfigSection& section)
       try {
         ndn::Name mcNamePrefix(tn.second.data());
         if (!mcNamePrefix.empty()) {
-          // TODO: Handle multicast name prefix registration
+          m_confParam.getNamePrefixList().insertMulticast(mcNamePrefix);
         }
         else {
           std::cerr << " Wrong command format ! [multicast-prefix /name/prefix] or bad URI" << std::endl;

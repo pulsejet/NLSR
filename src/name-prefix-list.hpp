@@ -68,6 +68,13 @@ public:
   bool
   insert(const ndn::Name& name, const std::string& source = "");
 
+  /*! \brief inserts multicast name into NamePrefixList
+      \retval true If the name was successfully inserted.
+      \retval false If the name could not be inserted.
+   */
+  bool
+  insertMulticast(const ndn::Name& name, const std::string& source = "");
+
   /*! \brief removes name from NamePrefixList
       \retval true If the name is removed
       \retval false If the name failed to be removed.
@@ -75,17 +82,27 @@ public:
   bool
   remove(const ndn::Name& name, const std::string& source = "");
 
+  /*! \brief removes multicast name from NamePrefixList
+      \retval true If the name is removed
+      \retval false If the name failed to be removed.
+   */
+  bool
+  removeMulticast(const ndn::Name& name, const std::string& source = "");
+
   void
   sort();
 
   size_t
   size() const
   {
-    return m_names.size();
+    return m_names.size() + m_mcNames.size();
   }
 
   std::list<ndn::Name>
   getNames() const;
+
+  std::list<ndn::Name>
+  getMulticastNames() const;
 
   bool
   operator==(const NamePrefixList& other) const;
@@ -97,6 +114,13 @@ public:
   uint32_t
   countSources(const ndn::Name& name) const;
 
+  /*! Returns how many unique sources this multicast name has.
+
+    \retval 0 if the name is not in the list, else the number of sources.
+   */
+  uint32_t
+  countMulticastSources(const ndn::Name& name) const;
+
   /*! Returns the sources that this name has.
 
     \retval an empty vector if the name is not in the list, else a
@@ -105,10 +129,19 @@ public:
   const std::vector<std::string>
   getSources(const ndn::Name& name) const;
 
+  /*! Returns the sources that this multicast name has.
+
+    \retval an empty vector if the name is not in the list, else a
+    vector containing the sources.
+   */
+  const std::vector<std::string>
+  getMulticastSources(const ndn::Name& name) const;
+
   void
   clear()
   {
     m_names.clear();
+    m_mcNames.clear();
   }
 
 private:
@@ -120,12 +153,21 @@ private:
   std::vector<NamePair>::iterator
   get(const ndn::Name& name);
 
+  /*! Obtain an iterator to the entry matching multicast name.
+
+    \note We could do this quite easily inline with a lambda, but this
+    is slightly more efficient.
+   */
+  std::vector<NamePair>::iterator
+  getMulticast(const ndn::Name& name);
+
   /*! Obtain an iterator to a specific source in an entry
    */
   std::vector<std::string>::iterator
   getSource(const std::string& source, std::vector<NamePair>::iterator& entry);
 
   std::vector<NamePair> m_names;
+  std::vector<NamePair> m_mcNames;
 };
 
 std::ostream&

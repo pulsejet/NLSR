@@ -41,6 +41,15 @@ NamePrefixList::get(const ndn::Name& name)
                       });
 }
 
+std::vector<NamePrefixList::NamePair>::iterator
+NamePrefixList::getMulticast(const ndn::Name& name)
+{
+  return std::find_if(m_mcNames.begin(), m_mcNames.end(),
+                      [&] (const NamePrefixList::NamePair& pair) {
+                        return name == std::get<NamePrefixList::NamePairIndex::NAME>(pair);
+                      });
+}
+
 std::vector<std::string>::iterator
 NamePrefixList::getSource(const std::string& source, std::vector<NamePair>::iterator& entry)
 {
@@ -72,6 +81,26 @@ NamePrefixList::insert(const ndn::Name& name, const std::string& source)
 }
 
 bool
+NamePrefixList::insertMulticast(const ndn::Name& name, const std::string& source)
+{
+  auto pairItr = getMulticast(name);
+  if (pairItr == m_mcNames.end()) {
+    std::vector<std::string> sources{source};
+    m_mcNames.push_back(std::tie(name, sources));
+    return true;
+  }
+  else {
+    std::vector<std::string>& sources = std::get<NamePrefixList::NamePairIndex::SOURCES>(*pairItr);
+    auto sourceItr = getSource(source, pairItr);
+    if (sourceItr == sources.end()) {
+      sources.push_back(source);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool
 NamePrefixList::remove(const ndn::Name& name, const std::string& source)
 {
   auto pairItr = get(name);
@@ -90,15 +119,34 @@ NamePrefixList::remove(const ndn::Name& name, const std::string& source)
 }
 
 bool
+NamePrefixList::removeMulticast(const ndn::Name& name, const std::string& source)
+{
+  auto pairItr = getMulticast(name);
+  if (pairItr != m_mcNames.end()) {
+    std::vector<std::string>& sources = std::get<NamePrefixList::NamePairIndex::SOURCES>(*pairItr);
+    auto sourceItr = getSource(source, pairItr);
+    if (sourceItr != sources.end()) {
+      sources.erase(sourceItr);
+      if (sources.size() == 0) {
+        m_mcNames.erase(pairItr);
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+bool
 NamePrefixList::operator==(const NamePrefixList& other) const
 {
-  return m_names == other.m_names;
+  return m_names == other.m_names && m_mcNames == other.m_mcNames;
 }
 
 void
 NamePrefixList::sort()
 {
   std::sort(m_names.begin(), m_names.end());
+  std::sort(m_mcNames.begin(), m_mcNames.end());
 }
 
 std::list<ndn::Name>
@@ -111,10 +159,26 @@ NamePrefixList::getNames() const
   return names;
 }
 
+std::list<ndn::Name>
+NamePrefixList::getMulticastNames() const
+{
+  std::list<ndn::Name> names;
+  for (const auto& namePair : m_mcNames) {
+    names.push_back(std::get<NamePrefixList::NamePairIndex::NAME>(namePair));
+  }
+  return names;
+}
+
 uint32_t
 NamePrefixList::countSources(const ndn::Name& name) const
 {
   return getSources(name).size();
+}
+
+uint32_t
+NamePrefixList::countMulticastSources(const ndn::Name& name) const
+{
+  return getMulticastSources(name).size();
 }
 
 const std::vector<std::string>
@@ -132,11 +196,36 @@ NamePrefixList::getSources(const ndn::Name& name) const
   }
 }
 
+const std::vector<std::string>
+NamePrefixList::getMulticastSources(const ndn::Name& name) const
+{
+  auto it = std::find_if(m_mcNames.begin(), m_mcNames.end(),
+                         [&] (const NamePrefixList::NamePair& pair) {
+                           return name == std::get<NamePrefixList::NamePairIndex::NAME>(pair);
+                         });
+  if (it != m_mcNames.end()) {
+    return std::get<NamePrefixList::NamePairIndex::SOURCES>(*it);
+  }
+  else {
+    return std::vector<std::string>{};
+  }
+}
+
 std::ostream&
 operator<<(std::ostream& os, const NamePrefixList& list)
 {
   os << "Name prefix list: {\n";
   for (const auto& name : list.getNames()) {
+    os << name << "\n"
+       << "Sources:\n";
+    for (const auto& source : list.getSources(name)) {
+      os << "  " << source << "\n";
+    }
+  }
+  os << "}" << std::endl;
+
+  os << "Multicast name prefix list: {\n";
+  for (const auto& name : list.getMulticastNames()) {
     os << name << "\n"
        << "Sources:\n";
     for (const auto& source : list.getSources(name)) {
