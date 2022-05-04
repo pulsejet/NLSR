@@ -65,7 +65,7 @@ CommandManagerBase::advertiseAndInsertPrefix(const ndn::Name& prefix,
     m_lsdb.buildAndInstallOwnNameLsa();
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
       NLSR_LOG_INFO("Saving name to the configuration file ");
-      if (afterAdvertise(castParams.getName()) == true) {
+      if (afterAdvertise(castParams.getName(), false) == true) {
         return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
       }
       else {
@@ -79,7 +79,7 @@ CommandManagerBase::advertiseAndInsertPrefix(const ndn::Name& prefix,
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
       // Save an already advertised prefix
       NLSR_LOG_INFO("Saving an already advertised name: " << castParams.getName() << "\n");
-      if (afterAdvertise(castParams.getName()) == true) {
+      if (afterAdvertise(castParams.getName(), false) == true) {
         return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
       }
       else {
@@ -102,11 +102,11 @@ CommandManagerBase::withdrawAndRemovePrefix(const ndn::Name& prefix,
     static_cast<const ndn::nfd::ControlParameters&>(parameters);
 
   // Only build a Name LSA if the added name is new
-  if (m_namePrefixList.remove(castParams.getName())) {
+  if (m_namePrefixList.remove(castParams.getName())) { // TODO: Make this multicast-aware
     NLSR_LOG_INFO("Withdrawing/Removing name: " << castParams.getName() << "\n");
-    m_lsdb.buildAndInstallOwnNameLsa();
+    m_lsdb.buildAndInstallOwnNameLsa(); // TODO: Make this multicast-aware
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
-      if (afterWithdraw(castParams.getName()) == true) {
+      if (afterWithdraw(castParams.getName(), false) == true) {
         return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
       }
       else {
@@ -120,7 +120,7 @@ CommandManagerBase::withdrawAndRemovePrefix(const ndn::Name& prefix,
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
       // Delete an already withdrawn prefix
       NLSR_LOG_INFO("Deleting an already withdrawn name: " << castParams.getName() << "\n");
-      if (afterWithdraw(castParams.getName()) == true) {
+      if (afterWithdraw(castParams.getName(), false) == true) {
         return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
       }
       else {
@@ -139,11 +139,38 @@ void CommandManagerBase::advertiseAndInsertMulticastPrefix(const ndn::Name &pref
                                                            const ndn::mgmt::CommandContinuation &done)
 {
   const auto& castParams = static_cast<const ndn::nfd::ControlParameters&>(parameters);
-  NLSR_LOG_INFO("Advertising multicast name: " << castParams.getName() << "\n");
 
-  // TODO: Implement
-
-  return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+  // Only build a Name LSA if the added multicast name is new
+  if (m_namePrefixList.insert(castParams.getName())) { // TODO: Make this multicast-aware
+    NLSR_LOG_INFO("Advertising multicast name: " << castParams.getName() << "\n");
+    m_lsdb.buildAndInstallOwnNameLsa(); // TODO: Make this multicast-aware
+    if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
+      NLSR_LOG_INFO("Saving multicast name to the configuration file ");
+      if (afterAdvertise(castParams.getName(), true) == true) {
+        return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+      }
+      else {
+        return done(ndn::nfd::ControlResponse(406, "Failed to open configuration file.")
+                        .setBody(parameters.wireEncode()));
+      }
+    }
+    return done(ndn::nfd::ControlResponse(200, "OK").setBody(parameters.wireEncode()));
+  }
+  else {
+    if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
+      // Save an already advertised prefix
+      NLSR_LOG_INFO("Saving an already advertised multicast name: " << castParams.getName() << "\n");
+      if (afterAdvertise(castParams.getName(), true) == true) {
+        return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+      }
+      else {
+        return done(ndn::nfd::ControlResponse(406, "Prefix is already Saved/Failed to open configuration file.")
+                        .setBody(parameters.wireEncode()));
+      }
+    }
+    return done(ndn::nfd::ControlResponse(204, "Prefix is already advertised/inserted.")
+                    .setBody(parameters.wireEncode()));
+  }
 }
 
 void CommandManagerBase::withdrawAndRemoveMulticastPrefix(const ndn::Name &prefix,
@@ -152,11 +179,37 @@ void CommandManagerBase::withdrawAndRemoveMulticastPrefix(const ndn::Name &prefi
                                                           const ndn::mgmt::CommandContinuation &done)
 {
   const auto& castParams = static_cast<const ndn::nfd::ControlParameters&>(parameters);
-  NLSR_LOG_INFO("Withdrawing/Removing multicast name: " << castParams.getName() << "\n");
 
-  // TODO: Implement
-
-  return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+  // Only build a Name LSA if the removed name is not new
+  if (m_namePrefixList.remove(castParams.getName())) {
+    NLSR_LOG_INFO("Withdrawing/Removing multicast name: " << castParams.getName() << "\n");
+    m_lsdb.buildAndInstallOwnNameLsa();
+    if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
+      if (afterWithdraw(castParams.getName(), true) == true) {
+        return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+      }
+      else {
+        return done(ndn::nfd::ControlResponse(406, "Failed to open configuration file.")
+                        .setBody(parameters.wireEncode()));
+      }
+    }
+    return done(ndn::nfd::ControlResponse(200, "OK").setBody(parameters.wireEncode()));
+  }
+  else {
+    if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
+      // Delete an already withdrawn prefix
+      NLSR_LOG_INFO("Deleting an already withdrawn multicast name: " << castParams.getName() << "\n");
+      if (afterWithdraw(castParams.getName(), true) == true) {
+        return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+      }
+      else {
+        return done(ndn::nfd::ControlResponse(406, "Prefix is already deleted/Failed to open configuration file.")
+                        .setBody(parameters.wireEncode()));
+      }
+    }
+    return done(ndn::nfd::ControlResponse(204, "Prefix is already withdrawn/removed.")
+                    .setBody(parameters.wireEncode()));
+  }
 }
 
 } // namespace update

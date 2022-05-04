@@ -140,9 +140,9 @@ PrefixUpdateProcessor::checkForPrefixInFile(const std::string prefix)
 }
 
 bool
-PrefixUpdateProcessor::addOrDeletePrefix(const ndn::Name& prefix, bool addPrefix)
+PrefixUpdateProcessor::addOrDeletePrefix(const ndn::Name& prefix, bool isMulticast, bool addPrefix)
 {
-  std::string value = " prefix " + prefix.toUri();
+  std::string value = (isMulticast ? " multicast-prefix " : " prefix ") + prefix.toUri();
   std::string fileString;
   std::string line;
   std::string trimedLine;
@@ -194,15 +194,15 @@ PrefixUpdateProcessor::addOrDeletePrefix(const ndn::Name& prefix, bool addPrefix
 }
 
 std::optional<bool>
-PrefixUpdateProcessor::afterAdvertise(const ndn::Name& prefix)
+PrefixUpdateProcessor::afterAdvertise(const ndn::Name& prefix, bool isMulticast)
 {
-  return addOrDeletePrefix(prefix, true);
+  return addOrDeletePrefix(prefix, isMulticast, true);
 }
 
 std::optional<bool>
-PrefixUpdateProcessor::afterWithdraw(const ndn::Name& prefix)
+PrefixUpdateProcessor::afterWithdraw(const ndn::Name& prefix, bool isMulticast)
 {
-  return addOrDeletePrefix(prefix, false);
+  return addOrDeletePrefix(prefix, isMulticast, false);
 }
 
 } // namespace update

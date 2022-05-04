@@ -614,6 +614,22 @@ ConfFileProcessor::processConfSectionAdvertising(const ConfigSection& section)
        return false;
      }
     }
+    else if (tn.first == "multicast-prefix") {
+      try {
+        ndn::Name mcNamePrefix(tn.second.data());
+        if (!mcNamePrefix.empty()) {
+          // TODO: Handle multicast name prefix registration
+        }
+        else {
+          std::cerr << " Wrong command format ! [multicast-prefix /name/prefix] or bad URI" << std::endl;
+          return false;
+        }
+      }
+      catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        return false;
+      }
+    }
   }
   return true;
 }

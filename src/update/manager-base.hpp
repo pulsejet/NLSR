@@ -146,7 +146,7 @@ public:
    *         returns bool from the overridden function while nullopt here
    */
   virtual std::optional<bool>
-  afterAdvertise(const ndn::Name& prefix)
+  afterAdvertise(const ndn::Name& prefix, bool isMulticast)
   {
     return std::nullopt;
   }
@@ -155,7 +155,7 @@ public:
    *         returns bool from the overridden function while nullopt here
    */
   virtual std::optional<bool>
-  afterWithdraw(const ndn::Name& prefix)
+  afterWithdraw(const ndn::Name& prefix, bool isMulticast)
   {
     return std::nullopt;
   }
