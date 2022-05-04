@@ -45,5 +45,25 @@ AdvertisePrefixCommand::AdvertisePrefixCommand()
 
 }
 
+WithdrawMulticastPrefixCommand::WithdrawMulticastPrefixCommand()
+  : ControlCommand("nlsr", "withdraw-multicast")
+{
+  m_requestValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+  m_responseValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+
+  m_requestValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
+  m_responseValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
+}
+
+AdvertiseMulticastPrefixCommand::AdvertiseMulticastPrefixCommand()
+  : ControlCommand("nlsr", "advertise-multicast")
+{
+  m_requestValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+  m_responseValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+
+  m_requestValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
+  m_responseValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
+}
+
 } // namespace update
 } // namespace nlsr

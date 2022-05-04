@@ -76,6 +76,18 @@ PrefixUpdateProcessor::PrefixUpdateProcessor(ndn::mgmt::Dispatcher& dispatcher,
     std::bind(&PrefixUpdateProcessor::validateParameters<WithdrawPrefixCommand>,
                 this, _1),
     std::bind(&PrefixUpdateProcessor::withdrawAndRemovePrefix, this, _1, _2, _3, _4));
+
+  m_dispatcher.addControlCommand<ndn::nfd::ControlParameters>(
+      makeRelPrefix("advertise-multicast"),
+      makeAuthorization(),
+      std::bind(&PrefixUpdateProcessor::validateParameters<AdvertiseMulticastPrefixCommand>, this, _1),
+      std::bind(&PrefixUpdateProcessor::advertiseAndInsertMulticastPrefix, this, _1, _2, _3, _4));
+
+  m_dispatcher.addControlCommand<ndn::nfd::ControlParameters>(
+      makeRelPrefix("withdraw-multicast"),
+      makeAuthorization(),
+      std::bind(&PrefixUpdateProcessor::validateParameters<WithdrawMulticastPrefixCommand>, this, _1),
+      std::bind(&PrefixUpdateProcessor::withdrawAndRemoveMulticastPrefix, this, _1, _2, _3, _4));
 }
 
 ndn::mgmt::Authorization

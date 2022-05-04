@@ -133,5 +133,31 @@ CommandManagerBase::withdrawAndRemovePrefix(const ndn::Name& prefix,
   }
 }
 
+void CommandManagerBase::advertiseAndInsertMulticastPrefix(const ndn::Name &prefix,
+                                                           const ndn::Interest &interest,
+                                                           const ndn::mgmt::ControlParameters &parameters,
+                                                           const ndn::mgmt::CommandContinuation &done)
+{
+  const auto& castParams = static_cast<const ndn::nfd::ControlParameters&>(parameters);
+  NLSR_LOG_INFO("Advertising multicast name: " << castParams.getName() << "\n");
+
+  // TODO: Implement
+
+  return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+}
+
+void CommandManagerBase::withdrawAndRemoveMulticastPrefix(const ndn::Name &prefix,
+                                                          const ndn::Interest &interest,
+                                                          const ndn::mgmt::ControlParameters &parameters,
+                                                          const ndn::mgmt::CommandContinuation &done)
+{
+  const auto& castParams = static_cast<const ndn::nfd::ControlParameters&>(parameters);
+  NLSR_LOG_INFO("Withdrawing/Removing multicast name: " << castParams.getName() << "\n");
+
+  // TODO: Implement
+
+  return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));
+}
+
 } // namespace update
 } // namespace nlsr

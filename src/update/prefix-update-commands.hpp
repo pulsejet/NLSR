@@ -51,6 +51,18 @@ public:
   AdvertisePrefixCommand();
 };
 
+class WithdrawMulticastPrefixCommand : public ndn::nfd::ControlCommand
+{
+public:
+  WithdrawMulticastPrefixCommand();
+};
+
+class AdvertiseMulticastPrefixCommand : public ndn::nfd::ControlCommand
+{
+public:
+  AdvertiseMulticastPrefixCommand();
+};
+
 } // namespace update
 } // namespace nlsr
 

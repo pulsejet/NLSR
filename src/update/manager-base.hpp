@@ -124,6 +124,24 @@ public:
                           const ndn::mgmt::ControlParameters& parameters,
                           const ndn::mgmt::CommandContinuation& done);
 
+  /*! \brief add desired multicast name prefix to the advertised name prefix list
+   *         or insert a multicast prefix into the FIB if parameters is valid.
+   */
+  void
+  advertiseAndInsertMulticastPrefix(const ndn::Name& prefix,
+                                    const ndn::Interest& interest,
+                                    const ndn::mgmt::ControlParameters& parameters,
+                                    const ndn::mgmt::CommandContinuation& done);
+
+  /*! \brief remove desired multicast name prefix from the advertised name prefix list
+   *         or remove a multicast prefix from the FIB if parameters is valid.
+   */
+  void
+  withdrawAndRemoveMulticastPrefix(const ndn::Name& prefix,
+                                   const ndn::Interest& interest,
+                                   const ndn::mgmt::ControlParameters& parameters,
+                                   const ndn::mgmt::CommandContinuation& done);
+
   /*! \brief save an advertised prefix to the nlsr configuration file
    *         returns bool from the overridden function while nullopt here
    */
