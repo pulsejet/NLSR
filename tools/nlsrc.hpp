@@ -92,6 +92,25 @@ private:
   void
   withdrawName(ndn::Name name, bool wantDelete);
 
+  /**
+   * \brief Adds a multicast name prefix to be advertised in NLSR's Name LSA
+   *
+   * cmd format:
+   *   name
+   *
+   */
+  void
+  advertiseMulticastName(ndn::Name name, bool wantSave);
+
+  /**
+   * \brief Removes a multicast name prefix from NLSR's Name LSA
+   *
+   * cmd format:
+   *  name
+   *
+   */
+  void withdrawMulticastName(ndn::Name name, bool wantDelete);
+
   void
   sendNamePrefixUpdate(const ndn::Name& name,
                        const ndn::Name::Component& verb,
