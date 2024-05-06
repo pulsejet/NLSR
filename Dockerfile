@@ -17,7 +17,7 @@ RUN <<EOF
     set -eux
     git clone --branch="${PSYNC_VERSION}" "${PSYNC_REPOSITORY}" psync
     cd psync
-    git reset --hard 8d6192a1d6c18e1c39286c721090a72123123d02
+    git reset --hard 6cda3e722ad2b46f940dcbed081cb8477a7c4ce5
     ./waf configure \
         --prefix=/usr \
         --libdir=/usr/lib \
